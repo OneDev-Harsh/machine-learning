@@ -51,7 +51,7 @@ plt.show()
 
 df_cleaned = df.copy()
 
-df_cleaned = df.drop_duplicates(inplace=True)   # returns data after removal of duplicate rows
+df_cleaned.drop_duplicates(inplace=True)   # returns data after removal of duplicate rows
 
 df_cleaned['sex'] = df_cleaned['sex'].map({"male":0, "female":1})   # label encoding the sex column male->0 & female->1
 
@@ -128,4 +128,36 @@ for col in cat_features:
 chi2_df = pd.DataFrame(chi2_results).T
 chi2_df = chi2_df.sort_values(by='p_value')
 
-final_df = df_cleaned['age', 'is_Female', 'bmi', 'children', 'is_smoker', 'charges', 'region_southeast', 'bmi_category_Obese']
+final_df = df_cleaned[['age', 'is_female', 'bmi', 'children', 'is_smoker', 'charges', 'region_southeast', 'bmi_category_Obese']]
+
+print(final_df.head(10))
+
+# Train Test Split
+
+from sklearn.model_selection import train_test_split
+
+X = final_df.drop('charges', axis=1)
+y = final_df['charges']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+# Training the Linear Regression model
+
+from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Model Evaluation
+
+y_pred = model.predict(X_test)
+
+from sklearn.metrics import r2_score
+
+r2 = r2_score(y_test, y_pred)
+
+n = X_test.shape[0]
+P = X_test.shape[1]
+
+adjusted_r2 = 1 - ((1-r2)*(1-n)/(n-P-1))
+print(r2, adjusted_r2)
